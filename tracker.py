@@ -9,25 +9,40 @@ URL = "https://www.flipkart.com/emma-germany-black-orthopaedic-roll-pack-6-inch-
 NTFY_TOPIC = "price-alerts-123"  # same as your mobile subscription
 
 HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36",
+    "Accept-Language": "en-IN,en;q=0.9",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Connection": "keep-alive"
 }
 
 # ========================
 # GET PRICE
 # ========================
+import time
+
 def get_price():
-    response = requests.get(URL, headers=HEADERS)
-    soup = BeautifulSoup(response.content, "html.parser")
+    for attempt in range(3):  # retry 3 times
+        try:
+            print(f"Attempt {attempt + 1}...")
 
-    # Flipkart price selectors
-    price = soup.select_one("div._30jeq3._16Jk6d")
+            response = requests.get(URL, headers=HEADERS, timeout=10)
+            print("Status Code:", response.status_code)
 
-    if not price:
-        print("Price not found!")
-        return None
+            soup = BeautifulSoup(response.content, "html.parser")
 
-    price_text = price.text.replace("₹", "").replace(",", "").strip()
-    return int(price_text)
+            price = soup.select_one("div._30jeq3._16Jk6d")
+
+            if price:
+                price_text = price.text.replace("₹", "").replace(",", "").strip()
+                return int(price_text)
+
+            print("Price not found")
+
+        except Exception as e:
+            print("Error:", e)
+            time.sleep(5)  # wait before retry
+
+    return None
 
 
 # ========================
@@ -60,6 +75,7 @@ def main():
     current_price = get_price()
 
     if current_price is None:
+        print("Skipping this run due to error")
         return
 
     old_price = get_old_price()
