@@ -5,7 +5,7 @@ import os
 # ========================
 # CONFIG
 # ========================
-URL = "https://dl.flipkart.com/s/asDPw1uuuN"  # replace with your product link
+URL = "https://www.flipkart.com/emma-germany-black-orthopaedic-roll-pack-6-inch-queen-high-resilience-hr-foam-mattress/p/itm7c912b40797bf?pid=BEMH7JHJYZRUH4JP&lid=LSTBEMH7JHJYZRUH4JPJYYGK7&marketplace=FLIPKART&pageUID=1775356044004"  # replace with your product link
 NTFY_TOPIC = "price-alerts-123"  # same as your mobile subscription
 
 HEADERS = {
@@ -19,14 +19,14 @@ def get_price():
     response = requests.get(URL, headers=HEADERS)
     soup = BeautifulSoup(response.content, "html.parser")
 
-    # Amazon price selectors (multiple fallbacks)
-    price = soup.select_one(".a-price-whole")
+    # Flipkart price selectors
+    price = soup.select_one("div._30jeq3._16Jk6d")
 
     if not price:
         print("Price not found!")
         return None
 
-    price_text = price.text.replace(",", "").strip()
+    price_text = price.text.replace("₹", "").replace(",", "").strip()
     return int(price_text)
 
 
